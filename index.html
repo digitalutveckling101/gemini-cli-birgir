@@ -468,8 +468,14 @@
         });
 
         // Initial setup
-        // 1. Show the first three immediately
-        shuffleImages();
+        // 1. Show the first three immediately by assigning sources directly
+        const initialShuffled = [...allImages].sort(() => 0.5 - Math.random());
+        const initialSelected = initialShuffled.slice(0, 3);
+        initialSelected.forEach((imgName, index) => {
+            imgElements[index].src = `images/${imgName}`;
+            imgElements[index].style.opacity = '1';
+        });
+        
         setRandomQuote();
 
         // 2. Wait for full page load before preloading the rest in background
