@@ -148,6 +148,40 @@
             transform: scale(1);
         }
 
+        /* Modal Navigation Arrows */
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 20px;
+            user-select: none;
+            transition: color 0.3s, transform 0.2s;
+            z-index: 1010;
+        }
+
+        .nav-arrow:hover {
+            color: #ff4757;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-arrow:active {
+            transform: translateY(-50%) scale(0.9);
+        }
+
+        .left { left: 5%; }
+        .right { right: 5%; }
+
+        @media (max-width: 600px) {
+            .nav-arrow {
+                font-size: 2rem;
+                padding: 10px;
+            }
+        }
+
         /* Quote Section */
         .quote-section {
             display: flex;
@@ -293,8 +327,10 @@
         <div class="gallery-item" onclick="openModal(this)"><img id="img3" src="" alt="Galleri bild 3"></div>
     </div>
 
-    <div id="imageModal" onclick="closeModal()">
+    <div id="imageModal" onclick="handleModalClick(event)">
+        <span class="nav-arrow left" onclick="prevImage(event)">&#10094;</span>
         <img id="modalImage" src="" alt="Förstoring">
+        <span class="nav-arrow right" onclick="nextImage(event)">&#10095;</span>
     </div>
 
     <div class="quote-section">
@@ -388,6 +424,28 @@
 
         function closeModal() {
             modal.classList.remove('show');
+        }
+
+        function handleModalClick(event) {
+            // Close modal only if clicking the background, not the image or arrows
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        function nextImage(event) {
+            event.stopPropagation();
+            const randomImg = allImages[Math.floor(Math.random() * allImages.length)];
+            modalImg.style.opacity = '0';
+            setTimeout(() => {
+                modalImg.src = `images/${randomImg}`;
+                modalImg.style.opacity = '1';
+            }, 200);
+        }
+
+        function prevImage(event) {
+            // Since it's random, previous just gets another random one
+            nextImage(event);
         }
 
         const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#3742fa', '#e84393'];
