@@ -344,16 +344,29 @@
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImage');
 
+        // Preload all images
+        function preloadImages() {
+            allImages.forEach(imgName => {
+                const img = new Image();
+                img.src = `images/${imgName}`;
+            });
+        }
+
         function shuffleImages() {
             const shuffled = [...allImages].sort(() => 0.5 - Math.random());
             const selected = shuffled.slice(0, 3);
-            selected.forEach((imgName, index) => {
-                imgElements[index].style.opacity = '0';
-                setTimeout(() => {
+            
+            // Fade out all images together
+            imgElements.forEach(img => img.style.opacity = '0');
+            
+            setTimeout(() => {
+                selected.forEach((imgName, index) => {
                     imgElements[index].src = `images/${imgName}`;
-                    imgElements[index].style.opacity = '1';
-                }, 200);
-            });
+                });
+                
+                // Fade in all images together once srcs are updated
+                imgElements.forEach(img => img.style.opacity = '1');
+            }, 300);
         }
 
         function setRandomQuote() {
@@ -391,6 +404,7 @@
         });
 
         // Initial setup
+        preloadImages();
         shuffleImages();
         setRandomQuote();
         setTimeout(() => { 
