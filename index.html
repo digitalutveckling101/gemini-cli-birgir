@@ -448,6 +448,19 @@
             nextImage(event);
         }
 
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (modal.classList.contains('show')) {
+                if (e.key === 'ArrowRight') {
+                    nextImage(e);
+                } else if (e.key === 'ArrowLeft') {
+                    prevImage(e);
+                } else if (e.key === 'Escape') {
+                    closeModal();
+                }
+            }
+        });
+
         const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#3742fa', '#e84393'];
         let colorIndex = 0;
 
