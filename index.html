@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mitt CLI-projekt</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f5f5f7, #e5e5ea);
+            --text-color: #1d1d1f;
+            --btn-shadow: rgba(0,0,0,0.1);
+            --quote-bg: rgba(255, 255, 255, 0.5);
+            --card-shadow: rgba(0, 0, 0, 0.1);
+            --switch-bg: #ccc;
+            --icon-color: #ffffff;
+        }
+
+        [data-theme="dark"] {
+            --bg-gradient: linear-gradient(135deg, #1e1e2f, #2a2a40);
+            --text-color: #ffffff;
+            --btn-shadow: rgba(0,0,0,0.3);
+            --quote-bg: rgba(0, 0, 0, 0.2);
+            --card-shadow: rgba(0, 0, 0, 0.4);
+            --switch-bg: #3a3a3c;
+            --icon-color: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            background: var(--bg-gradient);
+            color: var(--text-color);
+            transition: background 0.5s ease, color 0.5s ease;
+            text-align: center;
+            padding: 80px 20px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 10px var(--btn-shadow);
+        }
+
+        button {
+            padding: 12px 25px;
+            font-size: 1rem;
+            font-weight: 400;
+            cursor: pointer;
+            border: none;
+            border-radius: 50px;
+            background-color: #ff4757;
+            color: white;
+            box-shadow: 0 4px 15px var(--btn-shadow);
+            transition: transform 0.2s, background-color 0.3s, opacity 0.3s;
+        }
+
+        #colorButton {
+            margin-bottom: 2rem;
+        }
+
+        #insightButton {
+            background-color: #007aff;
+            margin-bottom: 1.5rem;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Gallery Styles */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 3rem;
+        }
+
+        .gallery-item {
+            aspect-ratio: 1 / 1;
+            background: var(--quote-bg);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--card-shadow);
+            transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.4s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 12px 40px var(--card-shadow);
+        }
+
+        /* Modal Styles */
+        #imageModal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        #imageModal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        #modalImage {
+            max-width: 65%;
+            max-height: 65%;
+            border-radius: 12px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        #imageModal.show #modalImage {
+            transform: scale(1);
+        }
+
+        /* Quote Section */
+        .quote-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #quoteContainer {
+            width: 100%;
+            min-height: 140px;
+            padding: 30px;
+            border-radius: 20px;
+            background: var(--quote-bg);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+        }
+
+        #quoteText {
+            font-size: 1.2rem;
+            font-weight: 300;
+            line-height: 1.6;
+            font-style: italic;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            margin: 0 0 15px 0;
+        }
+
+        #quoteAuthor {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            margin: 0;
+        }
+
+        #quoteText.visible, #quoteAuthor.visible {
+            opacity: 1;
+        }
+
+        /* Dark Mode Switch with Icons */
+        .theme-switch-wrapper {
+            position: absolute;
+            top: 24px;
+            right: 24px;
+            display: flex;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .theme-switch {
+            display: inline-block;
+            height: 30px;
+            position: relative;
+            width: 56px;
+        }
+
+        .theme-switch input {
+            display: none;
+        }
+
+        .slider {
+            background-color: var(--switch-bg);
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 6px;
+        }
+
+        .slider svg {
+            width: 14px;
+            height: 14px;
+            fill: var(--icon-color);
+            transition: .4s;
+        }
+
+        .slider:before {
+            background-color: #fff;
+            bottom: 3px;
+            content: "";
+            height: 24px;
+            left: 3px;
+            position: absolute;
+            transition: .4s;
+            width: 24px;
+            border-radius: 50%;
+            z-index: 2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        input:checked + .slider {
+            background-color: #007aff;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        input:checked + .slider .sun-icon {
+            opacity: 0.5;
+        }
+
+        input:not(:checked) + .slider .moon-icon {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" />
+            <div class="slider">
+                <svg class="sun-icon" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 000-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg>
+                <svg class="moon-icon" viewBox="0 0 24 24"><path d="M12.1 22c4.9 0 9-3.6 9.8-8.3.2-.8-.7-1.3-1.4-.9-1 .6-2.2 1-3.5 1-3.8 0-7-3.1-7-7 0-1.3.4-2.5 1-3.5.4-.7-.1-1.6-.9-1.4C4.6 3 1 7.1 1 12c0 5.5 4.5 10 10.1 10z"/></svg>
+            </div>
+        </label>
+    </div>
+
+    <h1>Birgir Birgisson</h1>
+    
+    <button id="colorButton">Slumpa fram bild</button>
+
+    <div class="gallery">
+        <div class="gallery-item" onclick="openModal(this)"><img id="img1" src="" alt="Galleri bild 1"></div>
+        <div class="gallery-item" onclick="openModal(this)"><img id="img2" src="" alt="Galleri bild 2"></div>
+        <div class="gallery-item" onclick="openModal(this)"><img id="img3" src="" alt="Galleri bild 3"></div>
+    </div>
+
+    <div id="imageModal" onclick="closeModal()">
+        <img id="modalImage" src="" alt="Förstoring">
+    </div>
+
+    <div class="quote-section">
+        <button id="insightButton">Slumpa fram citat</button>
+        <div id="quoteContainer">
+            <p id="quoteText"></p>
+            <p id="quoteAuthor">Birgir Birgisson</p>
+        </div>
+    </div>
+
+    <script>
+        const allImages = ["12D7BA46-792F-47B4-B074-AEC98FAC90D4.png","155B4E6D-73A9-4269-999E-2B5A749D3FF4.png","17F2358D-AC13-4C5A-BD0F-5A09365DAE74.png","19A229D3-3FBC-4E48-BD31-D46851BF16E3.png","23287FFB-C44B-4A15-9E76-60F46BB83761.png","245510EB-94BC-4D21-AE72-85D0009A3014.png","2EBDCB0A-2C69-49B6-957C-95370AB462F9.png","3A9EF07E-F12E-468C-966B-24EF155DDAEC.png","3E23F922-9DA3-449C-9328-9A08B99280A4.png","41E7C227-D1B0-4B23-882A-BDC9DFC50CEB.png","45F4526E-E775-4B62-B4B1-CE3BE3C93A36.png","467E83CD-B264-4A28-A1BB-3BF948EE09BD.png","4748B4E5-9885-4D41-BFB0-4EDC136F1503.png","4D4A7160-AB90-40AA-9994-2E1D8B9AC563.png","524EA9A2-339C-4729-84E1-F2F58EC1E711.png","52D0A351-2549-4A1C-BBA5-2C5832D7A7CF.png","53468435-9DC9-44CC-BFD4-883AA71EC07D.png","54D9C55D-5E47-4507-8757-51D4DE635888.png","5B5B3280-270E-48E9-AFC6-A50A1A68E25D.png","5EE31BD9-3DAB-49D0-B685-144B47EAE6EF.png","630B1706-435A-4FC9-BE7A-8986FDE299F1.png","64B72D4F-065A-4B09-BE03-E0ABCF90D928.png","699A46CC-90F2-46DB-B04A-A9954DA24099.png","6C2837C4-10F2-48B9-BBFB-CEF1DA00A9E7.png","6F7C705B-F0D8-43C3-821D-DB5F4CC372B0.png","71F1F55D-1F11-4098-BB4F-86C4379A21B5.png","759A547B-94BE-40D2-B753-32DB330830DA.png","77E68DD2-0A8E-4006-B5F8-0C9C833DE7AC.png","7A72CC70-87E3-4BFD-A153-370A1841825A.png","7E24BB2E-2924-4CE0-B2CD-B2B015339F36.png","8706F81D-60E3-40B1-AEEE-C1B93AF08AAB.png","8C371693-9770-40A6-96DE-E7020C86E410.png","8D1D7C35-F584-4004-8098-DFFA8F537FBB.png","8E5D910F-4607-4682-8A17-CFCD4EFB027C.png","90D45C8E-7937-49E8-8E39-62A7A5081F17.png","96BE8D97-187F-4F49-AE97-0A9CDB8B8446.png","9B9963A2-4D71-4D14-85FF-3F350D2A2169.png","A4031BE1-FE04-4DBF-8D87-ECB3E28FF1B0.png","ACCBA336-F6BC-4D8A-B2BD-478C402EC929.png","AE6F8077-9F57-4332-8B9E-522A0050AE67.png","B469B91A-C5C3-4564-8475-80ECCCB5186F.png","B6C38D6D-66B0-48BE-AB81-B3C184EFB137.png","B7044AE9-E6B9-41A7-B8E2-9EA604A2D8B1.png","BA27D29A-D4FD-463F-BDDE-94309A96A54E.png","BB illustrerad.png","BB5518D2-589D-4FD9-B902-1FE8FFAF925F_Original.JPG","BC3D4B55-8DE8-46AA-A49B-D9BF8BDE6F11.png","C064AFF1-2087-4BCF-B011-99732B60C05B.png","C1C86E32-F965-466D-ABAF-91F3F067C6AD.png","CA497E2E-84A3-4183-B83D-39FEDDBE0D58.png","CB800413-A9E5-4845-845F-309CE46CDB86.png","D356E326-6869-4A6E-9E55-37C9AACF3B50.png","D6020374-33CA-4F86-934F-0E78D9DAC51F.png","DB916A90-0854-433A-AF21-C6598547038E.png","DEC9E1FB-0C72-473B-8A4B-1B41ABB64A05.png","E7C3A211-E878-4652-860C-5CBC20DA9BAB.png","F19D1389-1F32-4FFC-94E4-3A59371D6D32.png","FE21B273-3605-43AC-9662-BA64223C14F1.png","IMG_4400_Original.JPG","IMG_4405_Original.JPG","IMG_4677.PNG","IMG_4813.PNG"];
+        const quotes = [
+            "Din inre värld är din största tillgång.",
+            "Din yttre värld kan bara vara så stor som din inre värld tillåter.",
+            "All varaktig förändring börjar med identitet.",
+            "Förändring är inte något du gör, det blir något du är.",
+            "Inre arbete är inte alltid bekvämt. Men det är befriande.",
+            "När du investerar i att förstå och utveckla din inre värld händer något märkligt. Yttre problem som tidigare kändes enorma blir plötsligt hanterbara.",
+            "Människan fungerar på två nivåer samtidigt: det rationella och det symboliska, det medvetna och det omedvetna.",
+            "Du är inte dina roller. Du har roller. Och det betyder att du kan förändra dem.",
+            "När din identitet förskjuts – när du börjar se dig själv som någon annan – då följer beteendena naturligt.",
+            "Personan som en gång skyddade dig kan nu hålla dig fången.",
+            "Framgång känns tom om den tillhör din persona, inte dig.",
+            "Identitet formar beteende, inte tvärtom.",
+            "Skuggan är inte 'det onda' inom dig. Den är helt enkelt de delar av din personlighet som inte fick plats.",
+            "Det du har tryckt undan är ofta inte svaghet, det är kraft. Kraft som väntar på att bli integrerad.",
+            "Motståndet är inte ditt problem, det är din väg in.",
+            "När du slutar fly från skuggan och börjar närma dig den med nyfikenhet förändras allt.",
+            "Skam stänger ner dialog. Nyfikenhet öppnar den.",
+            "Bakom varje motstånd finns en rädsla som en gång var befogad men som inte längre är det.",
+            "Aktiv Imagination är inte dagdrömmar. Det är något du möter, inte något du hittar på.",
+            "Ditt omedvetna tänker inte i ord. Det tänker i bilder, känslor och associationer.",
+            "Insikt utan handling blir filosofi, inte förändring.",
+            "En ritual är en medveten handling utförd med intention.",
+            "Kroppen lär sig genom upprepning, inte genom analys.",
+            "Din personliga myt är den röda tråd som löper genom ditt liv och ger mening åt det som annars verkar som separata händelser.",
+            "Du är inte en statisk varelse. Du är en process. Du är en rörelse."
+        ];
+
+        const colorBtn = document.getElementById('colorButton');
+        const insightBtn = document.getElementById('insightButton');
+        const quoteText = document.getElementById('quoteText');
+        const quoteAuthor = document.getElementById('quoteAuthor');
+        const toggleSwitch = document.querySelector('#checkbox');
+        const imgElements = [document.getElementById('img1'), document.getElementById('img2'), document.getElementById('img3')];
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+
+        function shuffleImages() {
+            const shuffled = [...allImages].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 3);
+            selected.forEach((imgName, index) => {
+                imgElements[index].style.opacity = '0';
+                setTimeout(() => {
+                    imgElements[index].src = `Images/${imgName}`;
+                    imgElements[index].style.opacity = '1';
+                }, 200);
+            });
+        }
+
+        function setRandomQuote() {
+            const randomIndex = Math.floor(Math.random() * quotes.length);
+            quoteText.textContent = `"${quotes[randomIndex]}"`;
+        }
+
+        function openModal(item) {
+            const clickedImg = item.querySelector('img');
+            modalImg.src = clickedImg.src;
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            modal.classList.remove('show');
+        }
+
+        const colors = ['#ff4757', '#2ed573', '#1e90ff', '#ffa502', '#3742fa', '#e84393'];
+        let colorIndex = 0;
+
+        colorBtn.addEventListener('click', () => {
+            colorIndex = (colorIndex + 1) % colors.length;
+            colorBtn.style.backgroundColor = colors[colorIndex];
+            shuffleImages();
+        });
+
+        insightBtn.addEventListener('click', () => {
+            quoteText.classList.remove('visible');
+            quoteAuthor.classList.remove('visible');
+            setTimeout(() => {
+                setRandomQuote();
+                quoteText.classList.add('visible');
+                quoteAuthor.classList.add('visible');
+            }, 400);
+        });
+
+        // Initial setup
+        shuffleImages();
+        setRandomQuote();
+        setTimeout(() => { 
+            quoteText.classList.add('visible'); 
+            quoteAuthor.classList.add('visible'); 
+        }, 500);
+
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('theme', theme);
+            toggleSwitch.checked = (theme === 'dark');
+        }
+
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+        if (savedTheme) setTheme(savedTheme); else if (systemPrefersDark.matches) setTheme('dark');
+
+        toggleSwitch.addEventListener('change', (e) => setTheme(e.target.checked ? 'dark' : 'light'));
+        systemPrefersDark.addEventListener('change', (e) => { if (!localStorage.getItem('theme')) setTheme(e.matches ? 'dark' : 'light'); });
+    </script>
+</body>
+</html>
