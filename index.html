@@ -344,9 +344,10 @@
         const modal = document.getElementById('imageModal');
         const modalImg = document.getElementById('modalImage');
 
-        // Preload all images
-        function preloadImages() {
-            allImages.forEach(imgName => {
+        // Optimized loading: Preload only what's needed or delay background loading
+        function preloadRemainingImages() {
+            // Skip the first few if they are likely already shown/loading
+            allImages.slice(3).forEach(imgName => {
                 const img = new Image();
                 img.src = `images/${imgName}`;
             });
@@ -361,11 +362,16 @@
             
             setTimeout(() => {
                 selected.forEach((imgName, index) => {
-                    imgElements[index].src = `images/${imgName}`;
+                    const img = imgElements[index];
+                    // Reset opacity for the new image to fade in naturally
+                    img.style.opacity = '0'; 
+                    img.src = `images/${imgName}`;
+                    
+                    // Smooth fade-in once loaded or as fallback
+                    img.onload = () => img.style.opacity = '1';
+                    // Fallback if cached or already loaded
+                    if (img.complete) img.style.opacity = '1';
                 });
-                
-                // Fade in all images together once srcs are updated
-                imgElements.forEach(img => img.style.opacity = '1');
             }, 300);
         }
 
@@ -404,9 +410,15 @@
         });
 
         // Initial setup
-        preloadImages();
+        // 1. Show the first three immediately
         shuffleImages();
         setRandomQuote();
+
+        // 2. Wait for full page load before preloading the rest in background
+        window.addEventListener('load', () => {
+            preloadRemainingImages();
+        });
+
         setTimeout(() => { 
             quoteText.classList.add('visible'); 
             quoteAuthor.classList.add('visible'); 
